@@ -137,9 +137,6 @@ class _BMICalculatorState extends State<BMICalculator> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 768; // Consider screens smaller than 768px as mobile
-
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,483 +149,299 @@ class _BMICalculatorState extends State<BMICalculator> {
             ),
           ),
           const SizedBox(height: 24),
-          isMobile ? Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Input section
-              Column(
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isMobile = constraints.maxWidth < 768;
+              
+              return isMobile ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildInputField(
-                    label: 'Height (cm)',
-                    controller: _heightController,
-                    suffix: 'cm',
-                    hintText: 'Enter height',
-                  ),
-                  const SizedBox(height: 16),
-                  _buildInputField(
-                    label: 'Weight (kg)',
-                    controller: _weightController,
-                    suffix: 'kg',
-                    hintText: 'Enter weight',
+                  // Input section
+                  Column(
+                    children: [
+                      _buildInputField(
+                        label: 'Height (cm)',
+                        controller: _heightController,
+                        suffix: 'cm',
+                        hintText: 'Enter height',
+                      ),
+                      const SizedBox(height: 16),
+                      _buildInputField(
+                        label: 'Weight (kg)',
+                        controller: _weightController,
+                        suffix: 'kg',
+                        hintText: 'Enter weight',
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _calculateBMI,
+                          child: const Text('Calculate BMI'),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 24),
-                  SizedBox(
+                  // Results section
+                  Container(
                     width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _calculateBMI,
-                      child: const Text('Calculate BMI'),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: _buildResultsSection(),
+                  ),
+                ],
+              ) : Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Input section
+                  Expanded(
+                    child: Column(
+                      children: [
+                        _buildInputField(
+                          label: 'Height (cm)',
+                          controller: _heightController,
+                          suffix: 'cm',
+                          hintText: 'Enter height',
+                        ),
+                        const SizedBox(height: 16),
+                        _buildInputField(
+                          label: 'Weight (kg)',
+                          controller: _weightController,
+                          suffix: 'kg',
+                          hintText: 'Enter weight',
+                        ),
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: _calculateBMI,
+                            child: const Text('Calculate BMI'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 24),
+                  // Results section
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: _buildResultsSection(),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResultsSection() {
+    return _bmi != null
+        ? Column(
+            children: [
+              // BMI Value
+              Column(
+                children: [
+                  Text(
+                    _bmi!.toString(),
+                    style: const TextStyle(
+                      fontSize: 36,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Text(
+                    'Your BMI',
+                    style: TextStyle(
+                      color: Colors.grey,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
-              // Results section
+              const SizedBox(height: 16),
+              // BMI Category
               Container(
-                width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(16),
+                  color: _getBMICategory(_bmi!)['bgColor'],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: _getBMICategory(_bmi!)['color'].withOpacity(0.3),
+                  ),
                 ),
-                child: _bmi != null
-                    ? Column(
-                        children: [
-                          // BMI Value
-                          Column(
-                            children: [
-                              Text(
-                                _bmi!.toString(),
-                                style: const TextStyle(
-                                  fontSize: 36,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const Text(
-                                'Your BMI',
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          // BMI Category
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: _getBMICategory(_bmi!)['bgColor'],
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: _getBMICategory(_bmi!)['color'].withOpacity(0.3),
-                              ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  _getBMICategory(_bmi!)['category'],
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: _getBMICategory(_bmi!)['color'],
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  _getBMICategory(_bmi!)['description'],
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          // BMI Scale
-                          Column(
-                            children: [
-                              // Color bar
-                              Container(
-                                height: 16,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Row(
-                                  children: _bmiCategories
-                                      .map(
-                                        (category) => Expanded(
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              color: category['color'],
-                                              borderRadius: BorderRadius.horizontal(
-                                                left: _bmiCategories.first == category
-                                                    ? const Radius.circular(8)
-                                                    : Radius.zero,
-                                                right: _bmiCategories.last == category
-                                                    ? const Radius.circular(8)
-                                                    : Radius.zero,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      )
-                                      .toList(),
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              // Category labels
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: _bmiCategories
-                                    .map(
-                                      (category) => Expanded(
-                                        child: Column(
-                                          children: [
-                                            Text(
-                                              category['category'],
-                                              style: const TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                              textAlign: TextAlign.center,
-                                            ),
-                                            Text(
-                                              category['range'],
-                                              style: const TextStyle(
-                                                fontSize: 10,
-                                                color: Colors.grey,
-                                              ),
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    )
-                                    .toList(),
-                              ),
-                            ],
-                          ),
-                        ],
-                      )
-                    : Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            'Enter your height and weight to calculate your BMI',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                          const SizedBox(height: 24),
-                          // BMI Scale
-                          Column(
-                            children: [
-                              // Color bar
-                              Container(
-                                height: 16,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Row(
-                                  children: _bmiCategories
-                                      .map(
-                                        (category) => Expanded(
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              color: category['color'],
-                                              borderRadius: BorderRadius.horizontal(
-                                                left: _bmiCategories.first == category
-                                                    ? const Radius.circular(8)
-                                                    : Radius.zero,
-                                                right: _bmiCategories.last == category
-                                                    ? const Radius.circular(8)
-                                                    : Radius.zero,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      )
-                                      .toList(),
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              // Category labels
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: _bmiCategories
-                                    .map(
-                                      (category) => Expanded(
-                                        child: Column(
-                                          children: [
-                                            Text(
-                                              category['category'],
-                                              style: const TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                              textAlign: TextAlign.center,
-                                            ),
-                                            Text(
-                                              category['range'],
-                                              style: const TextStyle(
-                                                fontSize: 10,
-                                                color: Colors.grey,
-                                              ),
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    )
-                                    .toList(),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-              ),
-            ],
-          ) : Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Input section
-              Expanded(
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildInputField(
-                      label: 'Height (cm)',
-                      controller: _heightController,
-                      suffix: 'cm',
-                      hintText: 'Enter height',
+                    Text(
+                      _getBMICategory(_bmi!)['category'],
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: _getBMICategory(_bmi!)['color'],
+                      ),
                     ),
-                    const SizedBox(height: 16),
-                    _buildInputField(
-                      label: 'Weight (kg)',
-                      controller: _weightController,
-                      suffix: 'kg',
-                      hintText: 'Enter weight',
-                    ),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _calculateBMI,
-                        child: const Text('Calculate BMI'),
+                    const SizedBox(height: 8),
+                    Text(
+                      _getBMICategory(_bmi!)['description'],
+                      style: const TextStyle(
+                        fontSize: 14,
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 24),
-              // Results section
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade50,
-                    borderRadius: BorderRadius.circular(16),
+              const SizedBox(height: 16),
+              // BMI Scale
+              Column(
+                children: [
+                  // Color bar
+                  Container(
+                    height: 16,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: _bmiCategories
+                          .map(
+                            (category) => Expanded(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: category['color'],
+                                  borderRadius: BorderRadius.horizontal(
+                                    left: _bmiCategories.first == category
+                                        ? const Radius.circular(8)
+                                        : Radius.zero,
+                                    right: _bmiCategories.last == category
+                                        ? const Radius.circular(8)
+                                        : Radius.zero,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                    ),
                   ),
-                  child: _bmi != null
-                      ? Column(
-                          children: [
-                            // BMI Value
-                            Column(
+                  const SizedBox(height: 8),
+                  // Category labels
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: _bmiCategories
+                        .map(
+                          (category) => Expanded(
+                            child: Column(
                               children: [
                                 Text(
-                                  _bmi!.toString(),
+                                  category['category'],
                                   style: const TextStyle(
-                                    fontSize: 36,
+                                    fontSize: 12,
                                     fontWeight: FontWeight.bold,
                                   ),
+                                  textAlign: TextAlign.center,
                                 ),
-                                const Text(
-                                  'Your BMI',
-                                  style: TextStyle(
+                                Text(
+                                  category['range'],
+                                  style: const TextStyle(
+                                    fontSize: 10,
                                     color: Colors.grey,
                                   ),
+                                  textAlign: TextAlign.center,
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 16),
-                            // BMI Category
-                            Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: _getBMICategory(_bmi!)['bgColor'],
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: _getBMICategory(_bmi!)['color'].withOpacity(0.3),
-                                ),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    _getBMICategory(_bmi!)['category'],
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: _getBMICategory(_bmi!)['color'],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    _getBMICategory(_bmi!)['description'],
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            // BMI Scale
-                            Column(
-                              children: [
-                                // Color bar
-                                Container(
-                                  height: 16,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Row(
-                                    children: _bmiCategories
-                                        .map(
-                                          (category) => Expanded(
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                color: category['color'],
-                                                borderRadius: BorderRadius.horizontal(
-                                                  left: _bmiCategories.first == category
-                                                      ? const Radius.circular(8)
-                                                      : Radius.zero,
-                                                  right: _bmiCategories.last == category
-                                                      ? const Radius.circular(8)
-                                                      : Radius.zero,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        )
-                                        .toList(),
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                // Category labels
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: _bmiCategories
-                                      .map(
-                                        (category) => Expanded(
-                                          child: Column(
-                                            children: [
-                                              Text(
-                                                category['category'],
-                                                style: const TextStyle(
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                                textAlign: TextAlign.center,
-                                              ),
-                                              Text(
-                                                category['range'],
-                                                style: const TextStyle(
-                                                  fontSize: 10,
-                                                  color: Colors.grey,
-                                                ),
-                                                textAlign: TextAlign.center,
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      )
-                                      .toList(),
-                                ),
-                              ],
-                            ),
-                          ],
+                          ),
                         )
-                      : Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              'Enter your height and weight to calculate your BMI',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(color: Colors.grey),
-                            ),
-                            const SizedBox(height: 24),
-                            // BMI Scale
-                            Column(
-                              children: [
-                                // Color bar
-                                Container(
-                                  height: 16,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Row(
-                                    children: _bmiCategories
-                                        .map(
-                                          (category) => Expanded(
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                color: category['color'],
-                                                borderRadius: BorderRadius.horizontal(
-                                                  left: _bmiCategories.first == category
-                                                      ? const Radius.circular(8)
-                                                      : Radius.zero,
-                                                  right: _bmiCategories.last == category
-                                                      ? const Radius.circular(8)
-                                                      : Radius.zero,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        )
-                                        .toList(),
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                // Category labels
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: _bmiCategories
-                                      .map(
-                                        (category) => Expanded(
-                                          child: Column(
-                                            children: [
-                                              Text(
-                                                category['category'],
-                                                style: const TextStyle(
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                                textAlign: TextAlign.center,
-                                              ),
-                                              Text(
-                                                category['range'],
-                                                style: const TextStyle(
-                                                  fontSize: 10,
-                                                  color: Colors.grey,
-                                                ),
-                                                textAlign: TextAlign.center,
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      )
-                                      .toList(),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                ),
+                        .toList(),
+                  ),
+                ],
               ),
             ],
-          ),
-        ],
-      ),
-    );
+          )
+        : Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                'Enter your height and weight to calculate your BMI',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey),
+              ),
+              const SizedBox(height: 24),
+              // BMI Scale
+              Column(
+                children: [
+                  // Color bar
+                  Container(
+                    height: 16,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: _bmiCategories
+                          .map(
+                            (category) => Expanded(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: category['color'],
+                                  borderRadius: BorderRadius.horizontal(
+                                    left: _bmiCategories.first == category
+                                        ? const Radius.circular(8)
+                                        : Radius.zero,
+                                    right: _bmiCategories.last == category
+                                        ? const Radius.circular(8)
+                                        : Radius.zero,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Category labels
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: _bmiCategories
+                        .map(
+                          (category) => Expanded(
+                            child: Column(
+                              children: [
+                                Text(
+                                  category['category'],
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                Text(
+                                  category['range'],
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.grey,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ],
+              ),
+            ],
+          );
   }
 
   Widget _buildInputField({
