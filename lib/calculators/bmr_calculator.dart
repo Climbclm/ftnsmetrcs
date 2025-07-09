@@ -92,9 +92,6 @@ class _BMRCalculatorState extends State<BMRCalculator> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 768;
-
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -107,114 +104,131 @@ class _BMRCalculatorState extends State<BMRCalculator> {
             ),
           ),
           const SizedBox(height: 24),
-          isMobile ? Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isMobile = constraints.maxWidth < 768;
+              
+              return isMobile ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Input section
+                  _buildInputSection(),
+                  const SizedBox(height: 24),
+                  // Results section
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: _buildResultsContent(),
+                  ),
+                ],
+              ) : Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Input section
+                  Expanded(child: _buildInputSection()),
+                  const SizedBox(width: 24),
+                  
+                  // Results section
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: _buildResultsContent(),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResultsContent() {
+    return _bmr != null
+        ? Column(
             children: [
-              // Input section
-              _buildInputSection(),
+              // BMR Value
+              Column(
+                children: [
+                  Text(
+                    '${_bmr!.toInt()}',
+                    style: const TextStyle(
+                      fontSize: 36,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Text(
+                    'calories/day',
+                    style: TextStyle(
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 24),
-              // Results section
+              const Text(
+                'Your Basal Metabolic Rate (BMR) is the number of calories your body needs to maintain basic physiological functions while at rest.',
+                style: TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 16),
               Container(
-                width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(16),
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Colors.green.withOpacity(0.3),
+                  ),
                 ),
-                child: _buildResultsContent(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'What does this mean?',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'This is the minimum amount of energy required to keep your body functioning, including breathing and keeping your heart beating. To maintain your current weight, you need to consume more than your BMR to account for your daily activities.',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade800,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
-          ) : Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          )
+        : const Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Input section
-              Expanded(child: _buildInputSection()),
-              const SizedBox(width: 24),
-              
-              // Results section
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade50,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: _bmr != null
-                      ? Column(
-                          children: [
-                            // BMR Value
-                            Column(
-                              children: [
-                                Text(
-                                  '${_bmr!.toInt()}',
-                                  style: const TextStyle(
-                                    fontSize: 36,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const Text(
-                                  'calories/day',
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 24),
-                            const Text(
-                              'Your Basal Metabolic Rate (BMR) is the number of calories your body needs to maintain basic physiological functions while at rest.',
-                              style: TextStyle(fontSize: 14),
-                            ),
-                            const SizedBox(height: 16),
-                            Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Colors.green.shade50,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: Colors.green.withOpacity(0.3),
-                                ),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'What does this mean?',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.green,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'This is the minimum amount of energy required to keep your body functioning, including breathing and keeping your heart beating. To maintain your current weight, you need to consume more than your BMR to account for your daily activities.',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.grey.shade800,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        )
-                      : const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Enter your details to calculate your Basal Metabolic Rate (BMR)',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(color: Colors.grey),
-                            ),
-                            SizedBox(height: 24),
-                            Text(
-                              'Your BMR is the number of calories your body needs at rest to maintain normal bodily functions like breathing, circulation, and cell production.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontSize: 14),
-                            ),
-                          ],
-                        );
+              Text(
+                'Enter your details to calculate your Basal Metabolic Rate (BMR)',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey),
+              ),
+              SizedBox(height: 24),
+              Text(
+                'Your BMR is the number of calories your body needs at rest to maintain normal bodily functions like breathing, circulation, and cell production.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14),
+              ),
+            ],
+          );
   }
 
   Widget _buildInputSection() {
@@ -428,6 +442,3 @@ class _BMRCalculatorState extends State<BMRCalculator> {
     );
   }
 }
-
-  Widget _buildResultsContent() {
-    return _bmr != null
