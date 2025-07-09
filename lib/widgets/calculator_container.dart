@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'responsive_layout.dart';
 import '../calculators/bmi_calculator.dart';
 import '../calculators/bmr_calculator.dart';
 import '../calculators/body_fat_calculator.dart';
@@ -23,14 +24,26 @@ class CalculatorContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+    return ResponsiveLayout(
+      mobileLayout: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: _getCalculator(),
+        ),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: _getCalculator(),
+      desktopLayout: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: _getCalculator(),
+        ),
       ),
     );
   }
