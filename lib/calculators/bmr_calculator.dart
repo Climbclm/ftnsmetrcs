@@ -92,6 +92,9 @@ class _BMRCalculatorState extends State<BMRCalculator> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 768;
+
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -104,178 +107,28 @@ class _BMRCalculatorState extends State<BMRCalculator> {
             ),
           ),
           const SizedBox(height: 24),
-          Row(
+          isMobile ? Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Input section
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Gender selection
-                    const Text(
-                      'Gender',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _gender = 'male';
-                              });
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              decoration: BoxDecoration(
-                                color: _gender == 'male'
-                                    ? Colors.green
-                                    : Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: _gender == 'male'
-                                      ? Colors.green
-                                      : Colors.grey.shade300,
-                                ),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  'Male',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: _gender == 'male'
-                                        ? Colors.white
-                                        : Colors.black,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _gender = 'female';
-                              });
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              decoration: BoxDecoration(
-                                color: _gender == 'female'
-                                    ? Colors.green
-                                    : Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: _gender == 'female'
-                                      ? Colors.green
-                                      : Colors.grey.shade300,
-                                ),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  'Female',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: _gender == 'female'
-                                        ? Colors.white
-                                        : Colors.black,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // Age, Height, Weight inputs
-                    _buildInputField(
-                      label: 'Age',
-                      controller: _ageController,
-                      suffix: 'years',
-                      hintText: 'Enter age',
-                    ),
-                    const SizedBox(height: 16),
-                    _buildInputField(
-                      label: 'Height',
-                      controller: _heightController,
-                      suffix: 'cm',
-                      hintText: 'Enter height',
-                    ),
-                    const SizedBox(height: 16),
-                    _buildInputField(
-                      label: 'Weight',
-                      controller: _weightController,
-                      suffix: 'kg',
-                      hintText: 'Enter weight',
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // Formula selection
-                    const Text(
-                      'Formula',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade300),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          isExpanded: true,
-                          value: _formula,
-                          items: const [
-                            DropdownMenuItem(
-                              value: 'mifflin',
-                              child: Text('Mifflin-St Jeor'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'harris',
-                              child: Text('Harris-Benedict'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'katch',
-                              child: Text('Katch-McArdle'),
-                            ),
-                          ],
-                          onChanged: (value) {
-                            if (value != null) {
-                              setState(() {
-                                _formula = value;
-                              });
-                            }
-                          },
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    
-                    // Calculate button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _calculateBMR,
-                        child: const Text('Calculate BMR'),
-                      ),
-                    ),
-                  ],
+              _buildInputSection(),
+              const SizedBox(height: 24),
+              // Results section
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(16),
                 ),
+                child: _buildResultsContent(),
               ),
+            ],
+          ) : Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Input section
+              Expanded(child: _buildInputSection()),
               const SizedBox(width: 24),
               
               // Results section
@@ -361,16 +214,177 @@ class _BMRCalculatorState extends State<BMRCalculator> {
                               style: TextStyle(fontSize: 14),
                             ),
                           ],
-                        ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
+                        );
   }
 
+  Widget _buildInputSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Gender selection
+        const Text(
+          'Gender',
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            color: Colors.grey,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _gender = 'male';
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: _gender == 'male'
+                        ? Colors.green
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _gender == 'male'
+                          ? Colors.green
+                          : Colors.grey.shade300,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Male',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: _gender == 'male'
+                            ? Colors.white
+                            : Colors.black,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _gender = 'female';
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: _gender == 'female'
+                        ? Colors.green
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _gender == 'female'
+                          ? Colors.green
+                          : Colors.grey.shade300,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Female',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: _gender == 'female'
+                            ? Colors.white
+                            : Colors.black,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        
+        // Age, Height, Weight inputs
+        _buildInputField(
+          label: 'Age',
+          controller: _ageController,
+          suffix: 'years',
+          hintText: 'Enter age',
+        ),
+        const SizedBox(height: 16),
+        _buildInputField(
+          label: 'Height',
+          controller: _heightController,
+          suffix: 'cm',
+          hintText: 'Enter height',
+        ),
+        const SizedBox(height: 16),
+        _buildInputField(
+          label: 'Weight',
+          controller: _weightController,
+          suffix: 'kg',
+          hintText: 'Enter weight',
+        ),
+        const SizedBox(height: 16),
+        
+        // Formula selection
+        const Text(
+          'Formula',
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            color: Colors.grey,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              isExpanded: true,
+              value: _formula,
+              items: const [
+                DropdownMenuItem(
+                  value: 'mifflin',
+                  child: Text('Mifflin-St Jeor'),
+                ),
+                DropdownMenuItem(
+                  value: 'harris',
+                  child: Text('Harris-Benedict'),
+                ),
+                DropdownMenuItem(
+                  value: 'katch',
+                  child: Text('Katch-McArdle'),
+                ),
+              ],
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() {
+                    _formula = value;
+                  });
+                }
+              },
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+        
+        // Calculate button
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: _calculateBMR,
+            child: const Text('Calculate BMR'),
+          ),
+        ),
+      ],
+    );
+  }
   Widget _buildInputField({
     required String label,
     required TextEditingController controller,
@@ -414,3 +428,6 @@ class _BMRCalculatorState extends State<BMRCalculator> {
     );
   }
 }
+
+  Widget _buildResultsContent() {
+    return _bmr != null
