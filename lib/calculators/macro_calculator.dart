@@ -116,370 +116,405 @@ class _MacroCalculatorState extends State<MacroCalculator> {
             ),
           ),
           const SizedBox(height: 24),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Input section
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Gender selection
-                    const Text(
-                      'Gender',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey,
-                      ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isMobile = constraints.maxWidth < 768;
+              
+              return isMobile ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Input section
+                  _buildInputSection(),
+                  const SizedBox(height: 24),
+                  // Results section
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _gender = 'male';
-                              });
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              decoration: BoxDecoration(
-                                color: _gender == 'male'
-                                    ? Colors.green
-                                    : Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: _gender == 'male'
-                                      ? Colors.green
-                                      : Colors.grey.shade300,
-                                ),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  'Male',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: _gender == 'male'
-                                        ? Colors.white
-                                        : Colors.black,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _gender = 'female';
-                              });
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              decoration: BoxDecoration(
-                                color: _gender == 'female'
-                                    ? Colors.green
-                                    : Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: _gender == 'female'
-                                      ? Colors.green
-                                      : Colors.grey.shade300,
-                                ),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  'Female',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: _gender == 'female'
-                                        ? Colors.white
-                                        : Colors.black,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // Basic inputs
-                    _buildInputField(
-                      label: 'Age',
-                      controller: _ageController,
-                      suffix: 'years',
-                      hintText: 'Enter age',
-                    ),
-                    const SizedBox(height: 16),
-                    _buildInputField(
-                      label: 'Height',
-                      controller: _heightController,
-                      suffix: 'cm',
-                      hintText: 'Enter height',
-                    ),
-                    const SizedBox(height: 16),
-                    _buildInputField(
-                      label: 'Weight',
-                      controller: _weightController,
-                      suffix: 'kg',
-                      hintText: 'Enter weight',
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // Activity level selection
-                    const Text(
-                      'Activity Level',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: _buildResultsContent(),
+                  ),
+                ],
+              ) : Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Input section
+                  Expanded(child: _buildInputSection()),
+                  const SizedBox(width: 24),
+                  // Results section
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade300),
+                        color: Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(16),
                       ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          isExpanded: true,
-                          value: _activityLevel,
-                          items: const [
-                            DropdownMenuItem(
-                              value: 'sedentary',
-                              child: Text('Sedentary (little or no exercise)'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'light',
-                              child: Text('Light (exercise 1-3 days/week)'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'moderate',
-                              child: Text('Moderate (exercise 3-5 days/week)'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'active',
-                              child: Text('Active (exercise 6-7 days/week)'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'veryActive',
-                              child: Text('Very Active (intense exercise daily)'),
-                            ),
-                          ],
-                          onChanged: (value) {
-                            if (value != null) {
-                              setState(() {
-                                _activityLevel = value;
-                              });
-                            }
-                          },
-                        ),
-                      ),
+                      child: _buildResultsContent(),
                     ),
-                    const SizedBox(height: 16),
-                    
-                    // Goal selection
-                    const Text(
-                      'Goal',
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInputSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Gender selection
+        const Text(
+          'Gender',
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            color: Colors.grey,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _gender = 'male';
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: _gender == 'male'
+                        ? Colors.green
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _gender == 'male'
+                          ? Colors.green
+                          : Colors.grey.shade300,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Male',
                       style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey,
+                        fontWeight: FontWeight.bold,
+                        color: _gender == 'male'
+                            ? Colors.white
+                            : Colors.black,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _goal = 'lose';
-                              });
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              decoration: BoxDecoration(
-                                color: _goal == 'lose'
-                                    ? Colors.blue
-                                    : Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: _goal == 'lose'
-                                      ? Colors.blue
-                                      : Colors.grey.shade300,
-                                ),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  'Lose',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: _goal == 'lose'
-                                        ? Colors.white
-                                        : Colors.black,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _goal = 'maintain';
-                              });
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              decoration: BoxDecoration(
-                                color: _goal == 'maintain'
-                                    ? Colors.green
-                                    : Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: _goal == 'maintain'
-                                      ? Colors.green
-                                      : Colors.grey.shade300,
-                                ),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  'Maintain',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: _goal == 'maintain'
-                                        ? Colors.white
-                                        : Colors.black,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _goal = 'gain';
-                              });
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              decoration: BoxDecoration(
-                                color: _goal == 'gain'
-                                    ? Colors.orange
-                                    : Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: _goal == 'gain'
-                                      ? Colors.orange
-                                      : Colors.grey.shade300,
-                                ),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  'Gain',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: _goal == 'gain'
-                                        ? Colors.white
-                                        : Colors.black,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // Macro ratio selection
-                    const Text(
-                      'Macro Ratio',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade300),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          isExpanded: true,
-                          value: _macroRatio,
-                          items: const [
-                            DropdownMenuItem(
-                              value: 'balanced',
-                              child: Text('Balanced (30P/40C/30F)'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'lowCarb',
-                              child: Text('Low Carb (40P/20C/40F)'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'highProtein',
-                              child: Text('High Protein (40P/30C/30F)'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'ketogenic',
-                              child: Text('Ketogenic (25P/5C/70F)'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'highCarb',
-                              child: Text('High Carb (25P/55C/20F)'),
-                            ),
-                          ],
-                          onChanged: (value) {
-                            if (value != null) {
-                              setState(() {
-                                _macroRatio = value;
-                              });
-                            }
-                          },
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    
-                    // Calculate button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _calculateMacros,
-                        child: const Text('Calculate Macros'),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
-              const SizedBox(width: 24),
-              
-              // Results section
-              Expanded(
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _gender = 'female';
+                  });
+                },
                 child: Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade50,
-                    borderRadius: BorderRadius.circular(16),
+                    color: _gender == 'female'
+                        ? Colors.green
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _gender == 'female'
+                          ? Colors.green
+                          : Colors.grey.shade300,
+                    ),
                   ),
-                  child: _macros != null
+                  child: Center(
+                    child: Text(
+                      'Female',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: _gender == 'female'
+                            ? Colors.white
+                            : Colors.black,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        
+        // Basic inputs
+        _buildInputField(
+          label: 'Age',
+          controller: _ageController,
+          suffix: 'years',
+          hintText: 'Enter age',
+        ),
+        const SizedBox(height: 16),
+        _buildInputField(
+          label: 'Height',
+          controller: _heightController,
+          suffix: 'cm',
+          hintText: 'Enter height',
+        ),
+        const SizedBox(height: 16),
+        _buildInputField(
+          label: 'Weight',
+          controller: _weightController,
+          suffix: 'kg',
+          hintText: 'Enter weight',
+        ),
+        const SizedBox(height: 16),
+        
+        // Activity level selection
+        const Text(
+          'Activity Level',
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            color: Colors.grey,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              isExpanded: true,
+              value: _activityLevel,
+              items: const [
+                DropdownMenuItem(
+                  value: 'sedentary',
+                  child: Text('Sedentary (little or no exercise)'),
+                ),
+                DropdownMenuItem(
+                  value: 'light',
+                  child: Text('Light (exercise 1-3 days/week)'),
+                ),
+                DropdownMenuItem(
+                  value: 'moderate',
+                  child: Text('Moderate (exercise 3-5 days/week)'),
+                ),
+                DropdownMenuItem(
+                  value: 'active',
+                  child: Text('Active (exercise 6-7 days/week)'),
+                ),
+                DropdownMenuItem(
+                  value: 'veryActive',
+                  child: Text('Very Active (intense exercise daily)'),
+                ),
+              ],
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() {
+                    _activityLevel = value;
+                  });
+                }
+              },
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        
+        // Goal selection
+        const Text(
+          'Goal',
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            color: Colors.grey,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _goal = 'lose';
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: _goal == 'lose'
+                        ? Colors.blue
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _goal == 'lose'
+                          ? Colors.blue
+                          : Colors.grey.shade300,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Lose',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: _goal == 'lose'
+                            ? Colors.white
+                            : Colors.black,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _goal = 'maintain';
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: _goal == 'maintain'
+                        ? Colors.green
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _goal == 'maintain'
+                          ? Colors.green
+                          : Colors.grey.shade300,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Maintain',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: _goal == 'maintain'
+                            ? Colors.white
+                            : Colors.black,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _goal = 'gain';
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: _goal == 'gain'
+                        ? Colors.orange
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _goal == 'gain'
+                          ? Colors.orange
+                          : Colors.grey.shade300,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Gain',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: _goal == 'gain'
+                            ? Colors.white
+                            : Colors.black,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        
+        // Macro ratio selection
+        const Text(
+          'Macro Ratio',
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            color: Colors.grey,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              isExpanded: true,
+              value: _macroRatio,
+              items: const [
+                DropdownMenuItem(
+                  value: 'balanced',
+                  child: Text('Balanced (30P/40C/30F)'),
+                ),
+                DropdownMenuItem(
+                  value: 'lowCarb',
+                  child: Text('Low Carb (40P/20C/40F)'),
+                ),
+                DropdownMenuItem(
+                  value: 'highProtein',
+                  child: Text('High Protein (40P/30C/30F)'),
+                ),
+                DropdownMenuItem(
+                  value: 'ketogenic',
+                  child: Text('Ketogenic (25P/5C/70F)'),
+                ),
+                DropdownMenuItem(
+                  value: 'highCarb',
+                  child: Text('High Carb (25P/55C/20F)'),
+                ),
+              ],
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() {
+                    _macroRatio = value;
+                  });
+                }
+              },
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+        
+        // Calculate button
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: _calculateMacros,
+            child: const Text('Calculate Macros'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildResultsContent() {
+    return _macros != null
                       ? Column(
                           children: [
                             // Calorie Value
@@ -677,14 +712,7 @@ class _MacroCalculatorState extends State<MacroCalculator> {
                               style: TextStyle(fontSize: 14),
                             ),
                           ],
-                        ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
+                        );
   }
 
   Widget _buildLegendItem(String label, Color color) {
