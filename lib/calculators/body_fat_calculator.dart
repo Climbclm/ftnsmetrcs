@@ -178,7 +178,395 @@ class _BodyFatCalculatorState extends State<BodyFatCalculator> {
             ),
           ),
           const SizedBox(height: 24),
-          Row(
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isMobile = constraints.maxWidth < 768;
+              
+              return isMobile ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Input section
+                  _buildInputSection(),
+                  const SizedBox(height: 24),
+                  // Results section
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: _buildResultsContent(),
+                  ),
+                ],
+              ) : Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Input section
+                  Expanded(child: _buildInputSection()),
+                  const SizedBox(width: 24),
+                  // Results section
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: _buildResultsContent(),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInputSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Gender selection
+        const Text(
+          'Gender',
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            color: Colors.grey,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _gender = 'male';
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: _gender == 'male'
+                        ? Colors.green
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _gender == 'male'
+                          ? Colors.green
+                          : Colors.grey.shade300,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Male',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: _gender == 'male'
+                            ? Colors.white
+                            : Colors.black,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _gender = 'female';
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: _gender == 'female'
+                        ? Colors.green
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _gender == 'female'
+                          ? Colors.green
+                          : Colors.grey.shade300,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Female',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: _gender == 'female'
+                            ? Colors.white
+                            : Colors.black,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        
+        // Method selection
+        const Text(
+          'Method',
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            color: Colors.grey,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              isExpanded: true,
+              value: _method,
+              items: const [
+                DropdownMenuItem(
+                  value: 'navy',
+                  child: Text('Navy Method'),
+                ),
+                DropdownMenuItem(
+                  value: 'bmi',
+                  child: Text('BMI Method'),
+                ),
+              ],
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() {
+                    _method = value;
+                  });
+                }
+              },
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        
+        // Height input
+        _buildInputField(
+          label: 'Height',
+          controller: _heightController,
+          suffix: 'cm',
+          hintText: 'Enter height',
+        ),
+        const SizedBox(height: 16),
+        
+        // Conditional inputs based on method
+        if (_method == 'navy') ...[
+          _buildInputField(
+            label: 'Neck Circumference',
+            controller: _neckController,
+            suffix: 'cm',
+            hintText: 'Enter neck measurement',
+          ),
+          const SizedBox(height: 16),
+          _buildInputField(
+            label: 'Waist Circumference',
+            controller: _waistController,
+            suffix: 'cm',
+            hintText: 'Enter waist measurement',
+          ),
+          if (_gender == 'female') ...[
+            const SizedBox(height: 16),
+            _buildInputField(
+              label: 'Hip Circumference',
+              controller: _hipController,
+              suffix: 'cm',
+              hintText: 'Enter hip measurement',
+            ),
+          ],
+        ] else if (_method == 'bmi') ...[
+          _buildInputField(
+            label: 'Weight',
+            controller: _weightController,
+            suffix: 'kg',
+            hintText: 'Enter weight',
+          ),
+        ],
+        
+        const SizedBox(height: 24),
+        
+        // Calculate button
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: _calculateBodyFat,
+            child: const Text('Calculate Body Fat'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildResultsContent() {
+    return _bodyFatPercentage != null
+        ? Column(
+            children: [
+              // Body Fat Value
+              Column(
+                children: [
+                  Text(
+                    '$_bodyFatPercentage%',
+                    style: const TextStyle(
+                      fontSize: 36,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Text(
+                    'Body Fat Percentage',
+                    style: TextStyle(
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              
+              // Body Fat Category
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: _getBodyFatCategory(_bodyFatPercentage!)['color'].withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: _getBodyFatCategory(_bodyFatPercentage!)['color'].withOpacity(0.3),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _getBodyFatCategory(_bodyFatPercentage!)['category'],
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: _getBodyFatCategory(_bodyFatPercentage!)['color'],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _getBodyFatCategory(_bodyFatPercentage!)['description'],
+                      style: const TextStyle(
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              
+              // Method explanation
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Colors.blue.withOpacity(0.3),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _method == 'navy' 
+                          ? 'About Navy Method'
+                          : 'About BMI Method',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue.shade700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _method == 'navy'
+                          ? 'The U.S. Navy method uses circumference measurements to estimate body fat percentage. It\'s generally accurate within 3-4% of body fat for most people.'
+                          : 'The BMI method provides a rough estimate based on height and weight. It\'s less accurate than methods that use circumference measurements.',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          )
+        : const Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Enter your measurements to calculate your body fat percentage',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey),
+              ),
+              SizedBox(height: 24),
+              Text(
+                'Body fat percentage is the amount of body fat as a proportion of your body weight. It\'s a more accurate measure of fitness than weight alone.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14),
+              ),
+            ],
+          );
+  }
+
+  Widget _buildInputField({
+    required String label,
+    required TextEditingController controller,
+    required String suffix,
+    required String hintText,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontWeight: FontWeight.w500,
+            color: Colors.grey,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          decoration: InputDecoration(
+            hintText: hintText,
+            suffixText: suffix,
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.green, width: 2),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Input section
