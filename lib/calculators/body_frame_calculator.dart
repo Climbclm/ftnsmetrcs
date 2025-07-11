@@ -112,248 +112,283 @@ class _BodyFrameCalculatorState extends State<BodyFrameCalculator> {
             ),
           ),
           const SizedBox(height: 24),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Input section
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Gender selection
-                    const Text(
-                      'Gender',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey,
-                      ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isMobile = constraints.maxWidth < 768;
+              
+              return isMobile ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Input section
+                  _buildInputSection(),
+                  const SizedBox(height: 24),
+                  // Results section
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _gender = 'male';
-                              });
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              decoration: BoxDecoration(
-                                color: _gender == 'male'
-                                    ? Colors.green
-                                    : Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: _gender == 'male'
-                                      ? Colors.green
-                                      : Colors.grey.shade300,
-                                ),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  'Male',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: _gender == 'male'
-                                        ? Colors.white
-                                        : Colors.black,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _gender = 'female';
-                              });
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              decoration: BoxDecoration(
-                                color: _gender == 'female'
-                                    ? Colors.green
-                                    : Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: _gender == 'female'
-                                      ? Colors.green
-                                      : Colors.grey.shade300,
-                                ),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  'Female',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: _gender == 'female'
-                                        ? Colors.white
-                                        : Colors.black,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // Method selection
-                    const Text(
-                      'Method',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _method = 'wrist';
-                              });
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              decoration: BoxDecoration(
-                                color: _method == 'wrist'
-                                    ? Colors.green
-                                    : Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: _method == 'wrist'
-                                      ? Colors.green
-                                      : Colors.grey.shade300,
-                                ),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  'Wrist Size',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: _method == 'wrist'
-                                        ? Colors.white
-                                        : Colors.black,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _method = 'ratio';
-                              });
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              decoration: BoxDecoration(
-                                color: _method == 'ratio'
-                                    ? Colors.green
-                                    : Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: _method == 'ratio'
-                                      ? Colors.green
-                                      : Colors.grey.shade300,
-                                ),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  'Height/Wrist Ratio',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: _method == 'ratio'
-                                        ? Colors.white
-                                        : Colors.black,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // Measurement inputs
-                    _buildInputField(
-                      label: 'Height',
-                      controller: _heightController,
-                      suffix: 'cm',
-                      hintText: 'Enter height',
-                    ),
-                    const SizedBox(height: 16),
-                    _buildInputField(
-                      label: 'Wrist Circumference',
-                      controller: _wristController,
-                      suffix: 'cm',
-                      hintText: 'Enter wrist measurement',
-                    ),
-                    const SizedBox(height: 24),
-                    
-                    // Calculate button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _calculateFrameSize,
-                        child: const Text('Calculate Frame Size'),
-                      ),
-                    ),
-                    
-                    // Measurement guide
-                    const SizedBox(height: 24),
-                    Container(
+                    child: _buildResultsContent(),
+                  ),
+                ],
+              ) : Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Input section
+                  Expanded(child: _buildInputSection()),
+                  const SizedBox(width: 24),
+                  // Results section
+                  Expanded(
+                    child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.blue.shade50,
-                        borderRadius: BorderRadius.circular(8),
+                        color: Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(16),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'How to Measure Your Wrist',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          const Text(
-                            'Use a measuring tape to measure the circumference of your wrist just below the wrist bone. Make sure the tape is snug but not tight.',
-                            style: TextStyle(fontSize: 14),
-                          ),
-                        ],
+                      child: _buildResultsContent(),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInputSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Gender selection
+        const Text(
+          'Gender',
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            color: Colors.grey,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _gender = 'male';
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: _gender == 'male'
+                        ? Colors.green
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _gender == 'male'
+                          ? Colors.green
+                          : Colors.grey.shade300,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Male',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: _gender == 'male'
+                            ? Colors.white
+                            : Colors.black,
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ),
-              const SizedBox(width: 24),
-              
-              // Results section
-              Expanded(
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _gender = 'female';
+                  });
+                },
                 child: Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade50,
-                    borderRadius: BorderRadius.circular(16),
+                    color: _gender == 'female'
+                        ? Colors.green
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _gender == 'female'
+                          ? Colors.green
+                          : Colors.grey.shade300,
+                    ),
                   ),
-                  child: _frameSize.isNotEmpty
+                  child: Center(
+                    child: Text(
+                      'Female',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: _gender == 'female'
+                            ? Colors.white
+                            : Colors.black,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        
+        // Method selection
+        const Text(
+          'Method',
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            color: Colors.grey,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _method = 'wrist';
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: _method == 'wrist'
+                        ? Colors.green
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _method == 'wrist'
+                          ? Colors.green
+                          : Colors.grey.shade300,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Wrist Size',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: _method == 'wrist'
+                            ? Colors.white
+                            : Colors.black,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _method = 'ratio';
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: _method == 'ratio'
+                        ? Colors.green
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _method == 'ratio'
+                          ? Colors.green
+                          : Colors.grey.shade300,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Height/Wrist Ratio',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: _method == 'ratio'
+                            ? Colors.white
+                            : Colors.black,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        
+        // Measurement inputs
+        _buildInputField(
+          label: 'Height',
+          controller: _heightController,
+          suffix: 'cm',
+          hintText: 'Enter height',
+        ),
+        const SizedBox(height: 16),
+        _buildInputField(
+          label: 'Wrist Circumference',
+          controller: _wristController,
+          suffix: 'cm',
+          hintText: 'Enter wrist measurement',
+        ),
+        const SizedBox(height: 24),
+        
+        // Calculate button
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: _calculateFrameSize,
+            child: const Text('Calculate Frame Size'),
+          ),
+        ),
+        
+        // Measurement guide
+        const SizedBox(height: 24),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.blue.shade50,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'How to Measure Your Wrist',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Use a measuring tape to measure the circumference of your wrist just below the wrist bone. Make sure the tape is snug but not tight.',
+                style: TextStyle(fontSize: 14),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildResultsContent() {
+    return _frameSize.isNotEmpty
                       ? Column(
                           children: [
                             // Frame Size Result
@@ -618,14 +653,7 @@ class _BodyFrameCalculatorState extends State<BodyFrameCalculator> {
                               style: TextStyle(fontSize: 14),
                             ),
                           ],
-                        ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
+                        );
   }
 
   Widget _buildInputField({
